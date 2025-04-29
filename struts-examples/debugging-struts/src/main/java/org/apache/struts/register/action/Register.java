@@ -1,0 +1,48 @@
+package org.apache.struts.register.action;
+
+import org.apache.struts.register.exceptions.SecurityBreachException;
+import org.apache.struts.register.model.Person;
+import org.apache.struts2.ActionSupport;
+import org.apache.struts2.interceptor.parameter.StrutsParameter;
+
+
+/**
+ * Acts as a controller to handle actions related to registering a user.
+ *
+ * @author bruce phillips
+ */
+public class Register extends ActionSupport {
+
+    private Person personBean;
+
+    @Override
+    public String execute() throws Exception {
+
+        // call Service class to store personBean's state in database
+
+        return SUCCESS;
+    }
+
+    public void throwException() throws Exception {
+        throw new Exception("Exception thrown from throwException");
+    }
+
+    public void throwNullPointerException() throws NullPointerException {
+        throw new NullPointerException("Null Pointer Exception thrown from "
+                + Register.class.toString());
+    }
+
+    public void throwSecurityException() throws SecurityBreachException {
+        throw new SecurityBreachException(
+                "Security breach exception thrown from throwSecurityException");
+    }
+
+    @StrutsParameter(depth = 2)
+    public Person getPersonBean() {
+        return personBean;
+    }
+
+    public void setPersonBean(Person person) {
+        personBean = person;
+    }
+}
